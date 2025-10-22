@@ -2,7 +2,6 @@ package org.example.assignment.Algorithms;
 
 import org.springframework.stereotype.Component;
 
-
 @Component("selectionSort")
 public class SelectionSort implements SortingAlgorithm {
 

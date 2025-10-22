@@ -7,34 +7,29 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #f8f9fa; /* Light gray background */
+            background-color: #f8f9fa;
             font-family: Arial, sans-serif;
         }
-
         .card {
-            max-width: 500px; /* Decreased width */
-            margin: 40px auto; /* Centered vertically and horizontally */
+            max-width: 500px;
+            margin: 40px auto;
             border-radius: 12px;
         }
-
         .card h3 {
             text-align: center;
             margin: 20px 0;
             font-weight: 600;
-            color: #343a40; /* Dark gray text instead of colored header */
+            color: #343a40;
         }
-
         .btn-submit {
-            background-color: #343a40; /* Dark gray button */
+            background-color: #343a40;
             color: #fff;
             border: none;
             transition: background-color 0.3s;
         }
-
         .btn-submit:hover {
-            background-color: #495057; /* Slightly lighter on hover */
+            background-color: #495057;
         }
-
         #result {
             border-radius: 8px;
         }
@@ -74,30 +69,92 @@
 </div>
 
 <script>
-    document.getElementById("sortForm").addEventListener("submit", async (e) => {
+    // --- Sorting algorithms implemented client-side ---
+    function bubbleSort(arr) {
+        const a = arr.slice();
+        for (let i = 0; i < a.length - 1; i++) {
+            for (let j = 0; j < a.length - i - 1; j++) {
+                if (a[j] > a[j + 1]) {
+                    [a[j], a[j + 1]] = [a[j + 1], a[j]];
+                }
+            }
+        }
+        return a;
+    }
+
+    function selectionSort(arr) {
+        const a = arr.slice();
+        for (let i = 0; i < a.length - 1; i++) {
+            let minIdx = i;
+            for (let j = i + 1; j < a.length; j++) {
+                if (a[j] < a[minIdx]) minIdx = j;
+            }
+            if (minIdx !== i) [a[i], a[minIdx]] = [a[minIdx], a[i]];
+        }
+        return a;
+    }
+
+    function quickSort(arr) {
+        // returns a new sorted array
+        if (arr.length <= 1) return arr.slice();
+        const a = arr.slice();
+        const pivot = a[Math.floor(a.length / 2)];
+        const left = [];
+        const right = [];
+        const middle = [];
+        for (const x of a) {
+            if (x < pivot) left.push(x);
+            else if (x > pivot) right.push(x);
+            else middle.push(x);
+        }
+        return quickSort(left).concat(middle, quickSort(right));
+    }
+
+    // Helper to parse input into numbers (allows floats and negatives)
+    function parseInput(input) {
+        // split by commas; also support spaces
+        const parts = input.split(",").map(p => p.trim()).filter(p => p !== "");
+        const nums = parts.map(p => Number(p)).filter(n => Number.isFinite(n));
+        return nums;
+    }
+
+    document.getElementById("sortForm").addEventListener("submit", (e) => {
         e.preventDefault();
 
-        const numbers = document.getElementById("numbers").value
-            .split(",")
-            .map(num => parseInt(num.trim()))
-            .filter(num => !isNaN(num));
-
+        const raw = document.getElementById("numbers").value;
         const algorithm = document.getElementById("algorithm").value;
+        const resultBox = document.getElementById("result");
+        const sortedDataP = document.getElementById("sortedData");
+        const algorithmUsed = document.getElementById("algorithmUsed");
 
-        const response = await fetch("/api/sort", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ numbers, algorithm }),
-        });
+        // parse numbers
+        const numbers = parseInput(raw);
 
-        if (response.ok) {
-            const result = await response.json();
-            document.getElementById("result").classList.remove("d-none");
-            document.getElementById("sortedData").textContent = result.sortedData.join(", ");
-            document.getElementById("algorithmUsed").textContent = "Algorithm Used: " + result.algorithmUsed;
-        } else {
-            alert("Error sorting data. Please try again.");
+        if (numbers.length === 0) {
+            alert("Please enter at least one valid number (comma-separated).");
+            return;
         }
+
+        // Choose algorithm
+        let sorted;
+        if (algorithm === "bubbleSort") {
+            sorted = bubbleSort(numbers);
+            algorithmUsed.textContent = "Algorithm Used: Bubble Sort";
+        } else if (algorithm === "selectionSort") {
+            sorted = selectionSort(numbers);
+            algorithmUsed.textContent = "Algorithm Used: Selection Sort";
+        } else if (algorithm === "quickSort") {
+            sorted = quickSort(numbers);
+            algorithmUsed.textContent = "Algorithm Used: Quick Sort";
+        } else {
+            // fallback: native JS sort (numeric)
+            sorted = numbers.slice().sort((a,b) => a - b);
+            algorithmUsed.textContent = "Algorithm Used: Default (numeric) sort";
+        }
+
+        // show result
+        sortedDataP.textContent = sorted.join(", ");
+        resultBox.classList.remove("d-none");
     });
 </script>
 
