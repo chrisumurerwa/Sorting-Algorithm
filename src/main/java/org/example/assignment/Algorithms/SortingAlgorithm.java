@@ -1,6 +1,5 @@
 package org.example.assignment.Algorithms;
 
-
 public interface SortingAlgorithm {
     /**
      * Sort the given array of integers

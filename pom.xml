@@ -24,7 +24,7 @@
     </properties>
 
     <dependencies>
-        <!-- ✅ Spring Web dependency (for REST APIs, HTTP handling, etc.) -->
+        <!--  Spring Web dependency (for REST APIs, HTTP handling, etc.) -->
         <!-- Spring Boot core functionality -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
