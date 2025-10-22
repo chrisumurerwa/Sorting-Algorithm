@@ -3,158 +3,115 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Assignment | Sorting Service</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <title>Sorting Algorithm | Spring Boot App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #f8f9fa;
             font-family: Arial, sans-serif;
         }
         .card {
-            max-width: 500px;
+            max-width: 600px;
             margin: 40px auto;
-            border-radius: 12px;
+            border-radius: 10px;
         }
-        .card h3 {
+        h3 {
             text-align: center;
             margin: 20px 0;
-            font-weight: 600;
             color: #343a40;
         }
-        .btn-submit {
+        .btn-dark {
             background-color: #343a40;
-            color: #fff;
             border: none;
-            transition: background-color 0.3s;
         }
-        .btn-submit:hover {
+        .btn-dark:hover {
             background-color: #495057;
-        }
-        #result {
-            border-radius: 8px;
         }
     </style>
 </head>
 <body>
 
-<div class="container py-3">
+<div class="container py-4">
     <div class="card shadow-sm">
-        <h3>Sorting Algorithm</h3>
+        <h3>Sorting Algorithm Service</h3>
         <div class="card-body">
             <form id="sortForm">
+                <!-- Input Numbers -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Enter Numbers (comma-separated):</label>
-                    <input type="text" id="numbers" class="form-control" placeholder="e.g. 5, 3, 8, 1" required />
+                    <input type="text" id="numbersInput" class="form-control" placeholder="e.g. 5, 2, 9, 1, 7" required />
                 </div>
 
+                <!-- Algorithm Selection -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Select Sorting Algorithm:</label>
-                    <select id="algorithm" class="form-select" required>
-                        <option value="bubbleSort">Bubble Sort</option>
-                        <option value="selectionSort">Selection Sort</option>
-                        <option value="quickSort">Quick Sort</option>
+                    <select id="algorithmSelect" class="form-select" required>
+                        <option value="bubble">Bubble Sort</option>
+                        <option value="selection">Selection Sort</option>
+                        <option value="quick">Quick Sort</option>
                     </select>
                 </div>
 
-                <button type="submit" class="btn btn-submit w-100">Sort Numbers</button>
+                <button type="submit" class="btn btn-dark w-100">Sort Numbers</button>
             </form>
 
-            <div id="result" class="mt-4 alert alert-info d-none">
+            <!-- Result Display -->
+            <div id="resultBox" class="alert alert-info mt-4 d-none">
                 <h5>Sorted Result:</h5>
-                <p id="sortedData" class="fw-bold"></p>
-                <small class="text-muted" id="algorithmUsed"></small>
+                <p id="sortedOutput" class="fw-bold"></p>
+                <small id="algorithmUsed" class="text-muted"></small>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    // --- Sorting algorithms implemented client-side ---
-    function bubbleSort(arr) {
-        const a = arr.slice();
-        for (let i = 0; i < a.length - 1; i++) {
-            for (let j = 0; j < a.length - i - 1; j++) {
-                if (a[j] > a[j + 1]) {
-                    [a[j], a[j + 1]] = [a[j + 1], a[j]];
-                }
-            }
-        }
-        return a;
+    // Helper to convert comma-separated text to an array of integers
+    function parseNumbers(input) {
+        return input
+            .split(",")
+            .map(n => parseFloat(n.trim()))
+            .filter(n => !isNaN(n));
     }
 
-    function selectionSort(arr) {
-        const a = arr.slice();
-        for (let i = 0; i < a.length - 1; i++) {
-            let minIdx = i;
-            for (let j = i + 1; j < a.length; j++) {
-                if (a[j] < a[minIdx]) minIdx = j;
-            }
-            if (minIdx !== i) [a[i], a[minIdx]] = [a[minIdx], a[i]];
-        }
-        return a;
-    }
-
-    function quickSort(arr) {
-        // returns a new sorted array
-        if (arr.length <= 1) return arr.slice();
-        const a = arr.slice();
-        const pivot = a[Math.floor(a.length / 2)];
-        const left = [];
-        const right = [];
-        const middle = [];
-        for (const x of a) {
-            if (x < pivot) left.push(x);
-            else if (x > pivot) right.push(x);
-            else middle.push(x);
-        }
-        return quickSort(left).concat(middle, quickSort(right));
-    }
-
-    // Helper to parse input into numbers (allows floats and negatives)
-    function parseInput(input) {
-        // split by commas; also support spaces
-        const parts = input.split(",").map(p => p.trim()).filter(p => p !== "");
-        const nums = parts.map(p => Number(p)).filter(n => Number.isFinite(n));
-        return nums;
-    }
-
-    document.getElementById("sortForm").addEventListener("submit", (e) => {
+    // Form submission event
+    document.getElementById("sortForm").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const raw = document.getElementById("numbers").value;
-        const algorithm = document.getElementById("algorithm").value;
-        const resultBox = document.getElementById("result");
-        const sortedDataP = document.getElementById("sortedData");
-        const algorithmUsed = document.getElementById("algorithmUsed");
-
-        // parse numbers
-        const numbers = parseInput(raw);
+        const numbersInput = document.getElementById("numbersInput").value;
+        const algorithm = document.getElementById("algorithmSelect").value;
+        const numbers = parseNumbers(numbersInput);
 
         if (numbers.length === 0) {
-            alert("Please enter at least one valid number (comma-separated).");
+            alert(" Please enter valid numbers separated by commas.");
             return;
         }
 
-        // Choose algorithm
-        let sorted;
-        if (algorithm === "bubbleSort") {
-            sorted = bubbleSort(numbers);
-            algorithmUsed.textContent = "Algorithm Used: Bubble Sort";
-        } else if (algorithm === "selectionSort") {
-            sorted = selectionSort(numbers);
-            algorithmUsed.textContent = "Algorithm Used: Selection Sort";
-        } else if (algorithm === "quickSort") {
-            sorted = quickSort(numbers);
-            algorithmUsed.textContent = "Algorithm Used: Quick Sort";
-        } else {
-            // fallback: native JS sort (numeric)
-            sorted = numbers.slice().sort((a,b) => a - b);
-            algorithmUsed.textContent = "Algorithm Used: Default (numeric) sort";
-        }
+        try {
+            const response = await fetch(`/api/sorting/sort?algorithm=${algorithm}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(numbers)
+            });
 
-        // show result
-        sortedDataP.textContent = sorted.join(", ");
-        resultBox.classList.remove("d-none");
+            if (!response.ok) {
+                const err = await response.json();
+                alert(" Error: " + (err.error || "Failed to sort."));
+                return;
+            }
+
+            const result = await response.json();
+
+            document.getElementById("resultBox").classList.remove("d-none");
+            document.getElementById("sortedOutput").textContent = result.sortedData
+                ? result.sortedData.join(", ")
+                : result.sortedNumbers
+                    ? result.sortedNumbers.join(", ")
+                    : "No data returned.";
+            document.getElementById("algorithmUsed").textContent = "Algorithm Used: " + algorithm.charAt(0).toUpperCase() + algorithm.slice(1) + " Sort";
+        } catch (err) {
+            alert(" Error connecting to backend: " + err.message);
+        }
     });
 </script>
 
